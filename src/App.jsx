@@ -1,48 +1,21 @@
 import './App.css'
+import { useState } from 'react'
 import { Movies } from './components/Movies'
 import { useMovies } from './hooks/useMovies'
-import { useEffect, useState, useRef } from 'react'
-
-function useSearch() {
-  const [search, updateSearch] = useState('')
-  const [error, setError] = useState(null)
-  const isFirstRender = useRef(true)
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = search === ''
-      return
-    }
-
-    if (search === '') {
-      setError('No se puede buscar una película vacía')
-      return
-    }
-
-    if (search.match(/^\d+$/)) {
-      setError('No se puede buscar una película con un número')
-      return
-    }
-
-    if (search.length < 3) {
-      setError('La búsqueda debe tener al menos 3 caracteres')
-      return
-    }
-
-    setError(null)
-  }, [search])
-
-  return { search, updateSearch, error }
-} // custom hook
+import { useSearch } from './hooks/useSearch'
 
 function App() {
-
+  const [sort, setSort] = useState(false)
   const { search, updateSearch, error } = useSearch()
-  const { movies, loading, getMovies } = useMovies({ search })
+  const { movies, loading, getMovies } = useMovies({ search, sort })
 
   const handleSubmit = (event) => {
     event.preventDefault()
     getMovies()
+  }
+
+  const handleSort = () => {
+    setSort(!sort)
   }
 
   const handleChange = (event) => {
@@ -56,6 +29,7 @@ function App() {
         <h1>Movie search engine</h1>
         <form className='form' onSubmit={handleSubmit}>
           <input onChange={handleChange} value={search} name="query" placeholder='Avengers, King Kong, Fast & Furious...' />
+          <input type="checkbox" onChange={handleSort} checked={sort} />
           <button type='submit'>Search</button>
         </form>
         {error && <p style={{ color: 'red' }}>{error}</p>}
